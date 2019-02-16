@@ -25,39 +25,18 @@ impl Username {
     }
 }
 
-#[cfg(target_os = "linux")]
 impl Column for Username {
     fn add(&mut self, proc: &ProcessInfo) {
-        let pid = proc.curr_proc.pid();
-        let user = users::get_user_by_uid(proc.curr_proc.owner);
+        let user = users::get_user_by_uid(proc.sysinfo_proc.uid);
         let fmt_content = if let Some(user) = user {
             format!("{}", user.name().to_string_lossy())
         } else {
-            format!("{}", proc.curr_proc.owner)
+            format!("{}", proc.sysinfo_proc.uid)
         };
         let raw_content = fmt_content.clone();
 
-        self.fmt_contents.insert(pid, fmt_content);
-        self.raw_contents.insert(pid, raw_content);
-    }
-
-    column_default!(String);
-}
-
-#[cfg(target_os = "macos")]
-impl Column for Username {
-    fn add(&mut self, proc: &ProcessInfo) {
-        let pid = proc.curr_proc.pbsd.pbi_pid as i32;
-        let user = users::get_user_by_uid(proc.curr_proc.pbsd.pbi_uid);
-        let fmt_content = if let Some(user) = user {
-            format!("{}", user.name().to_string_lossy())
-        } else {
-            format!("{}", proc.curr_proc.pbsd.pbi_uid)
-        };
-        let raw_content = fmt_content.clone();
-
-        self.fmt_contents.insert(pid, fmt_content);
-        self.raw_contents.insert(pid, raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(String);

@@ -27,15 +27,19 @@ impl Wchan {
 
 impl Column for Wchan {
     fn add(&mut self, proc: &ProcessInfo) {
-        let raw_content = proc.curr_proc.wchan().unwrap_or_default();
+        let raw_content = if let Some(proc) = &proc.procfs_proc_curr {
+            proc.wchan().unwrap_or_default()
+        } else {
+            Default::default()
+        };
         let fmt_content = if raw_content == "0" {
             String::from("-")
         } else {
             raw_content.clone()
         };
 
-        self.fmt_contents.insert(proc.curr_proc.pid(), fmt_content);
-        self.raw_contents.insert(proc.curr_proc.pid(), raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(String);

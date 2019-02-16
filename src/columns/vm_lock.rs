@@ -27,7 +27,7 @@ impl VmLock {
 
 impl Column for VmLock {
     fn add(&mut self, proc: &ProcessInfo) {
-        let (raw_content, fmt_content) = if let Ok(ref curr_status) = proc.curr_status {
+        let (raw_content, fmt_content) = if let Some(ref curr_status) = proc.procfs_status_curr {
             if let Some(val) = curr_status.vmlck {
                 let val = val * 1024;
                 let (size, unit) = unbytify::bytify(val);
@@ -42,8 +42,8 @@ impl Column for VmLock {
             (0, String::from(""))
         };
 
-        self.fmt_contents.insert(proc.curr_proc.pid(), fmt_content);
-        self.raw_contents.insert(proc.curr_proc.pid(), raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(u64);

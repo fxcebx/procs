@@ -28,13 +28,16 @@ impl VmSize {
 #[cfg(target_os = "linux")]
 impl Column for VmSize {
     fn add(&mut self, proc: &ProcessInfo) {
-        let pid = proc.curr_proc.pid();
-        let raw_content = proc.curr_proc.stat.vsize;
+        let raw_content = if let Some(proc) = &proc.procfs_proc_curr {
+            proc.stat.vsize
+        } else {
+            0
+        };
         let (size, unit) = unbytify::bytify(raw_content);
         let fmt_content = format!("{}{}", size, unit.replace("i", "").replace("B", ""));
 
-        self.fmt_contents.insert(pid, fmt_content);
-        self.raw_contents.insert(pid, raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(u64);

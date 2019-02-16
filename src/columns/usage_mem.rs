@@ -29,12 +29,16 @@ impl UsageMem {
 
 impl Column for UsageMem {
     fn add(&mut self, proc: &ProcessInfo) {
-        let usage = proc.curr_proc.stat.rss_bytes() as f64 * 100.0 / self.mem_total as f64;
+        let usage = if let Some(proc) = &proc.procfs_proc_curr {
+            proc.stat.rss_bytes() as f64 * 100.0 / self.mem_total as f64
+        } else {
+            0.0
+        };
         let fmt_content = format!("{:.1}", usage);
         let raw_content = (usage * 1000.0) as u32;
 
-        self.fmt_contents.insert(proc.curr_proc.pid(), fmt_content);
-        self.raw_contents.insert(proc.curr_proc.pid(), raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(u32);

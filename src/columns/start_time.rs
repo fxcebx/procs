@@ -1,8 +1,9 @@
 use crate::process::ProcessInfo;
 use crate::{column_default, Column};
-use chrono::{DateTime, Local};
+use chrono::{offset::TimeZone, DateTime, Local};
 use std::cmp;
 use std::collections::HashMap;
+use sysinfo::ProcessExt;
 
 pub struct StartTime {
     header: String,
@@ -28,12 +29,12 @@ impl StartTime {
 
 impl Column for StartTime {
     fn add(&mut self, proc: &ProcessInfo) {
-        let start_time = proc.curr_proc.stat.starttime();
+        let start_time = Local.timestamp(proc.sysinfo_proc.start_time() as i64, 0);
         let raw_content = start_time;
         let fmt_content = format!("{}", start_time.format("%Y/%m/%d %H:%M"));
 
-        self.fmt_contents.insert(proc.curr_proc.pid(), fmt_content);
-        self.raw_contents.insert(proc.curr_proc.pid(), raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(DateTime<Local>);

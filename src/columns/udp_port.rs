@@ -32,33 +32,37 @@ impl UdpPort {
 
 impl Column for UdpPort {
     fn add(&mut self, proc: &ProcessInfo) {
-        let fmt_content = if let Ok(fds) = proc.curr_proc.fd() {
-            let mut socks = Vec::new();
-            for fd in fds {
-                if let FDTarget::Socket(x) = fd.target {
-                    socks.push(x)
+        let fmt_content = if let Some(proc) = &proc.procfs_proc_curr {
+            if let Ok(fds) = proc.fd() {
+                let mut socks = Vec::new();
+                for fd in fds {
+                    if let FDTarget::Socket(x) = fd.target {
+                        socks.push(x)
+                    }
                 }
-            }
 
-            let mut ports = Vec::new();
-            for sock in &socks {
-                let mut udp_iter = self.udp_entry.iter().chain(self.udp6_entry.iter());
-                let entry = udp_iter.find(|&x| x.inode == *sock);
-                if let Some(entry) = entry {
-                    ports.push(entry.local_address.port());
+                let mut ports = Vec::new();
+                for sock in &socks {
+                    let mut udp_iter = self.udp_entry.iter().chain(self.udp6_entry.iter());
+                    let entry = udp_iter.find(|&x| x.inode == *sock);
+                    if let Some(entry) = entry {
+                        ports.push(entry.local_address.port());
+                    }
                 }
-            }
-            ports.sort();
-            ports.dedup();
+                ports.sort();
+                ports.dedup();
 
-            format!("{:?}", ports)
+                format!("{:?}", ports)
+            } else {
+                String::from("")
+            }
         } else {
             String::from("")
         };
         let raw_content = fmt_content.clone();
 
-        self.fmt_contents.insert(proc.curr_proc.pid(), fmt_content);
-        self.raw_contents.insert(proc.curr_proc.pid(), raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     fn find_exact(&self, pid: i32, keyword: &str) -> bool {

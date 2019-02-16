@@ -47,14 +47,18 @@ impl Docker {
 
 impl Column for Docker {
     fn add(&mut self, proc: &ProcessInfo) {
-        let fmt_content = if let Ok(cgroups) = proc.curr_proc.cgroups() {
-            let cgroup_name = cgroups[0].pathname.clone();
-            if cgroup_name.starts_with("/docker") {
-                let container_id = cgroup_name.replace("/docker/", "");
-                if let Some(name) = self.containers.get(&container_id) {
-                    name.to_string()
+        let fmt_content = if let Some(proc) = &proc.procfs_proc_curr {
+            if let Ok(cgroups) = proc.cgroups() {
+                let cgroup_name = cgroups[0].pathname.clone();
+                if cgroup_name.starts_with("/docker") {
+                    let container_id = cgroup_name.replace("/docker/", "");
+                    if let Some(name) = self.containers.get(&container_id) {
+                        name.to_string()
+                    } else {
+                        String::from("?")
+                    }
                 } else {
-                    String::from("?")
+                    String::from("")
                 }
             } else {
                 String::from("")
@@ -64,8 +68,8 @@ impl Column for Docker {
         };
         let raw_content = fmt_content.clone();
 
-        self.fmt_contents.insert(proc.curr_proc.pid(), fmt_content);
-        self.raw_contents.insert(proc.curr_proc.pid(), raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     fn available(&self) -> bool {

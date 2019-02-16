@@ -27,12 +27,11 @@ impl ReadBytes {
 
 impl Column for ReadBytes {
     fn add(&mut self, proc: &ProcessInfo) {
-        let (fmt_content, raw_content) = if proc.curr_io.is_ok() && proc.prev_io.is_ok() {
+        let (fmt_content, raw_content) = if let (Some(proc_curr), Some(proc_prev)) =
+            (&proc.procfs_io_curr, &proc.procfs_io_prev)
+        {
             let interval_ms = proc.interval.as_secs() + u64::from(proc.interval.subsec_millis());
-            let io = (proc.curr_io.as_ref().unwrap().read_bytes
-                - proc.prev_io.as_ref().unwrap().read_bytes)
-                * 1000
-                / interval_ms;
+            let io = (proc_curr.read_bytes - proc_prev.read_bytes) * 1000 / interval_ms;
             let (size, unit) = unbytify::bytify(io);
             (
                 format!("{}{}", size, unit.replace("i", "").replace("B", "")),
@@ -42,8 +41,8 @@ impl Column for ReadBytes {
             (String::from(""), 0)
         };
 
-        self.fmt_contents.insert(proc.curr_proc.pid(), fmt_content);
-        self.raw_contents.insert(proc.curr_proc.pid(), raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(u64);

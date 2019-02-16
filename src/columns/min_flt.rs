@@ -27,11 +27,15 @@ impl MinFlt {
 
 impl Column for MinFlt {
     fn add(&mut self, proc: &ProcessInfo) {
-        let raw_content = proc.curr_proc.stat.minflt;
-        let fmt_content = format!("{}", raw_content);
+        let (raw_content, fmt_content) = if let Some(proc) = &proc.procfs_proc_curr {
+            let val = proc.stat.minflt;
+            (val, format!("{}", val))
+        } else {
+            (0, String::from(""))
+        };
 
-        self.fmt_contents.insert(proc.curr_proc.pid(), fmt_content);
-        self.raw_contents.insert(proc.curr_proc.pid(), raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(u64);

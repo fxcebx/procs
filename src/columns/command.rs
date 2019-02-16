@@ -2,7 +2,6 @@ use crate::process::ProcessInfo;
 use crate::{column_default, Column};
 use std::cmp;
 use std::collections::HashMap;
-#[cfg(target_os = "macos")]
 use sysinfo::ProcessExt;
 
 pub struct Command {
@@ -27,47 +26,46 @@ impl Command {
     }
 }
 
-#[cfg(target_os = "linux")]
 impl Column for Command {
     fn add(&mut self, proc: &ProcessInfo) {
-        let pid = proc.curr_proc.pid();
-        let fmt_content = if let Ok(cmd) = &proc.curr_proc.cmdline() {
-            if !cmd.is_empty() {
-                let mut cmd = cmd
-                    .iter()
-                    .cloned()
-                    .map(|mut x| {
-                        x.push(' ');
-                        x
-                    })
-                    .collect::<String>();
-                cmd.pop();
-                cmd = cmd.replace("\n", " ").replace("\t", " ");
-                cmd
-            } else {
-                proc.curr_proc.stat.comm.clone()
-            }
-        } else {
-            proc.curr_proc.stat.comm.clone()
+        //let fmt_content = format!("{:?}", proc.sysinfo_proc.clone().unwrap().cmd());
+        //let fmt_content = if let Ok(cmd) = &proc.curr_proc.cmdline() {
+        //    if !cmd.is_empty() {
+        //        let mut cmd = cmd
+        //            .iter()
+        //            .cloned()
+        //            .map(|mut x| {
+        //                x.push(' ');
+        //                x
+        //            })
+        //            .collect::<String>();
+        //        cmd.pop();
+        //        cmd = cmd.replace("\n", " ").replace("\t", " ");
+        //        cmd
+        //    } else {
+        //        proc.curr_proc.stat.comm.clone()
+        //    }
+        //} else {
+        //    proc.curr_proc.stat.comm.clone()
+        //};
+        let fmt_content = {
+            let cmd = proc.sysinfo_proc.cmd();
+            let mut cmd = cmd
+                .iter()
+                .cloned()
+                .map(|mut x| {
+                    x.push(' ');
+                    x
+                })
+                .collect::<String>();
+            cmd.pop();
+            cmd = cmd.replace("\n", " ").replace("\t", " ");
+            cmd
         };
         let raw_content = fmt_content.clone();
 
-        self.fmt_contents.insert(pid, fmt_content);
-        self.raw_contents.insert(pid, raw_content);
-    }
-
-    column_default!(String);
-}
-
-#[cfg(target_os = "macos")]
-impl Column for Command {
-    fn add(&mut self, proc: &ProcessInfo) {
-        let pid = proc.curr_proc.pbsd.pbi_pid as i32;
-        let fmt_content = format!("{:?}", proc.proc.cmd());
-        let raw_content = fmt_content.clone();
-
-        self.fmt_contents.insert(pid, fmt_content);
-        self.raw_contents.insert(pid, raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(String);

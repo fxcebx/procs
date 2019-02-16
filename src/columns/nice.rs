@@ -28,12 +28,15 @@ impl Nice {
 #[cfg(target_os = "linux")]
 impl Column for Nice {
     fn add(&mut self, proc: &ProcessInfo) {
-        let pid = proc.curr_proc.pid();
-        let raw_content = proc.curr_proc.stat.nice;
-        let fmt_content = format!("{}", raw_content);
+        let (raw_content, fmt_content) = if let Some(proc) = &proc.procfs_proc_curr {
+            let val = proc.stat.nice;
+            (val, format!("{}", val))
+        } else {
+            (0, String::from(""))
+        };
 
-        self.fmt_contents.insert(pid, fmt_content);
-        self.raw_contents.insert(pid, raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(i64);

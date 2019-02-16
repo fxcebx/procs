@@ -2,7 +2,6 @@ use crate::process::ProcessInfo;
 use crate::{column_default, Column};
 use std::cmp;
 use std::collections::HashMap;
-#[cfg(target_os = "macos")]
 use sysinfo::{ProcessExt, ProcessStatus};
 
 pub struct State {
@@ -27,39 +26,26 @@ impl State {
     }
 }
 
-#[cfg(target_os = "linux")]
 impl Column for State {
     fn add(&mut self, proc: &ProcessInfo) {
-        let pid = proc.curr_proc.pid();
-        let fmt_content = format!("{}", proc.curr_proc.stat.state);
+        let state = match proc.sysinfo_proc.status() {
+            ProcessStatus::Idle => "I",
+            ProcessStatus::Run => "R",
+            ProcessStatus::Sleep => "S",
+            ProcessStatus::Stop => "T",
+            ProcessStatus::Zombie => "Z",
+            ProcessStatus::Tracing => "t",
+            ProcessStatus::Dead => "D",
+            ProcessStatus::Wakekill => "D",
+            ProcessStatus::Waking => "D",
+            ProcessStatus::Parked => "D",
+            ProcessStatus::Unknown(_) => "?",
+        };
+        let fmt_content = format!("{}", state);
         let raw_content = fmt_content.clone();
 
-        self.fmt_contents.insert(pid, fmt_content);
-        self.raw_contents.insert(pid, raw_content);
-    }
-
-    column_default!(String);
-}
-
-#[cfg(target_os = "macos")]
-impl Column for State {
-    fn add(&mut self, proc: &ProcessInfo) {
-        let pid = proc.curr_proc.pbsd.pbi_pid as i32;
-        //let state = match proc.proc.status() {
-        //    ProcessStatus::Idle => "I",
-        //    ProcessStatus::Run => "R",
-        //    ProcessStatus::Sleep => "S",
-        //    ProcessStatus::Stop => "T",
-        //    ProcessStatus::Zombie => "Z",
-        //    ProcessStatus::Unknown(_) => "?",
-        //};
-        //let fmt_content = format!("{}", state);
-        //let fmt_content = format!("{}", proc.proc.status());
-        let fmt_content = format!("{:?}", proc.proc.status);
-        let raw_content = fmt_content.clone();
-
-        self.fmt_contents.insert(pid, fmt_content);
-        self.raw_contents.insert(pid, raw_content);
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
     }
 
     column_default!(String);
