@@ -65,7 +65,7 @@ pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
 
     let mut oid = vec![libc::CTL_KERN, libc::KERN_PROC, libc::KERN_PROC_ALL, 0];
 
-    let ctl = sysctl::value_oid(&mut oid);
+    let ctl = sysctl::value_oid_raw(&mut oid);
     dbg!(ctl);
 
     let mut ctl = sysctl::Ctl::new("kern.proc").unwrap();
