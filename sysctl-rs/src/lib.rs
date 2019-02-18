@@ -909,13 +909,8 @@ pub fn value_oid_raw(oid: &mut Vec<i32>) -> Result<Vec<c_uchar>, SysctlError> {
         return Err(SysctlError::IoError(io::Error::last_os_error()));
     }
 
-    // If the length reported is shorter than the type we will convert it into,
-    // LittleEndian::read_* will panic. Therefore, expand the value length to at
-    // Least the size of the value.
-    let val_minsize = val_len;
-
     // Then get value
-    let mut val: Vec<c_uchar> = vec![0; val_minsize];
+    let mut val: Vec<c_uchar> = vec![0; val_len];
     let mut new_val_len = val_len;
     let ret = unsafe {
         sysctl(
@@ -931,15 +926,7 @@ pub fn value_oid_raw(oid: &mut Vec<i32>) -> Result<Vec<c_uchar>, SysctlError> {
         return Err(SysctlError::IoError(io::Error::last_os_error()));
     }
 
-    // Confirm that we did not read out of bounds
-    assert!(new_val_len <= val_len);
-    // Confirm that we got the bytes we requested
-    if new_val_len < val_len {
-        return Err(SysctlError::ShortRead {
-            read: new_val_len,
-            reported: val_len,
-        });
-    }
+    val.truncate(new_val_len);
 
     Ok(val)
 }
