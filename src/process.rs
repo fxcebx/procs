@@ -61,7 +61,6 @@ pub struct ProcessInfo {
 
 #[cfg(target_os = "macos")]
 pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
-    let mut base_procs = Vec::new();
     let mut ret = Vec::new();
 
     let mut ctl = sysctl::Ctl::new("kern.proc.all").unwrap();
