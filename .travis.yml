@@ -18,7 +18,7 @@ before_cache: |
 script:
 - make test
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then make release_lnx; fi
-- if [[ $TRAVIS_OS_NAME == "osx"   ]]; then ps auxw; cargo run; fi
+- if [[ $TRAVIS_OS_NAME == "osx"   ]]; then ps auxw; cargo run; sudo ./target/debug/procs fi
 
 after_success: |
     if [[ $TRAVIS_OS_NAME == "linux" ]]; then
