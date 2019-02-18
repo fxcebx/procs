@@ -25,9 +25,23 @@ impl State {
     }
 }
 
+#[cfg(target_os = "linux")]
 impl Column for State {
     fn add(&mut self, proc: &ProcessInfo) {
         let fmt_content = format!("{}", proc.curr_proc.stat.state);
+        let raw_content = fmt_content.clone();
+
+        self.fmt_contents.insert(proc.pid, fmt_content);
+        self.raw_contents.insert(proc.pid, raw_content);
+    }
+
+    column_default!(String);
+}
+
+#[cfg(target_os = "macos")]
+impl Column for State {
+    fn add(&mut self, proc: &ProcessInfo) {
+        let fmt_content = format!("a");
         let raw_content = fmt_content.clone();
 
         self.fmt_contents.insert(proc.pid, fmt_content);

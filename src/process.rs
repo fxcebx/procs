@@ -2,6 +2,7 @@ use procfs::{Io, ProcResult, Process, Status};
 use std::thread;
 use std::time::{Duration, Instant};
 
+#[cfg(target_os = "linux")]
 pub struct ProcessInfo {
     pub pid: i32,
     pub curr_proc: Process,
@@ -12,6 +13,7 @@ pub struct ProcessInfo {
     pub interval: Duration,
 }
 
+#[cfg(target_os = "linux")]
 pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
     let mut base_procs = Vec::new();
     let mut ret = Vec::new();
@@ -47,6 +49,22 @@ pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
 
         ret.push(proc);
     }
+
+    ret
+}
+
+#[cfg(target_os = "macos")]
+pub struct ProcessInfo {
+    pub pid: i32,
+}
+
+#[cfg(target_os = "macos")]
+pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
+    let mut base_procs = Vec::new();
+    let mut ret = Vec::new();
+
+    let mut ctl = sysctl::Ctl::new("kern.proc.all").unwrap();
+    dbg!(ctl.value_type());
 
     ret
 }
