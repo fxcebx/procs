@@ -63,7 +63,7 @@ pub struct ProcessInfo {
 pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
     let mut ret = Vec::new();
 
-    let mut oid = vec![libc::CTL_KERN, libc::KERN_PROC, libc::KERN_PROC_ALL];
+    let mut oid = vec![libc::CTL_KERN, libc::KERN_PROC, libc::KERN_PROC_ALL, 0];
 
     let ctl = sysctl::value_oid(&mut oid);
     dbg!(ctl);
