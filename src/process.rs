@@ -1,3 +1,4 @@
+#[cfg(target_os = "linux")]
 use procfs::{Io, ProcResult, Process, Status};
 use std::thread;
 use std::time::{Duration, Instant};
