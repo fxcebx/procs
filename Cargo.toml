@@ -35,6 +35,7 @@ procfs       = "0.4.6"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 sysctl       = "0.3.0"
+libc         = "*"
 
 [package.metadata.release]
 dev-version-ext            = "pre"

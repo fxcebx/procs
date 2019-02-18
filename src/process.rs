@@ -63,6 +63,11 @@ pub struct ProcessInfo {
 pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
     let mut ret = Vec::new();
 
+    let mut oid = vec![libc::CTL_KERN, libc::KERN_PROC, libc::KERN_PROC_ALL];
+
+    let ctl = sysctl::value_oid(&mut oid);
+    dbg!(ctl);
+
     let mut ctl = sysctl::Ctl::new("kern.proc").unwrap();
     dbg!(ctl.value_type());
     for p in sysctl::CtlIter::below(ctl) {
