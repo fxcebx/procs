@@ -408,8 +408,7 @@ pub enum SysctlError {
 
     #[fail(
         display = "sysctl returned a short read: read {} bytes, while a size of {} was reported",
-        read,
-        reported
+        read, reported
     )]
     ShortRead { read: usize, reported: usize },
 
@@ -893,7 +892,7 @@ pub fn value_oid(oid: &mut Vec<i32>) -> Result<CtlValue, SysctlError> {
 }
 
 #[cfg(target_os = "macos")]
-pub fn value_oid_raw(oid: &mut Vec<i32>) -> Result<Vec<c_uchar, SysctlError> {
+pub fn value_oid_raw(oid: &mut Vec<i32>) -> Result<Vec<c_uchar>, SysctlError> {
     // First get size of value in bytes
     let mut val_len = 0;
     let ret = unsafe {
