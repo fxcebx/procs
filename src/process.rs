@@ -71,7 +71,7 @@ pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
     let mut ctl = sysctl::Ctl::new("kern.proc").unwrap();
     dbg!(ctl.value_type());
     for p in sysctl::CtlIter::below(ctl) {
-        dbg!(p);
+        let p = dbg!(p);
         for p in sysctl::CtlIter::below(p.unwrap()) {
             dbg!(p);
         }
