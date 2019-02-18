@@ -72,7 +72,7 @@ pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
     dbg!(ctl.value_type());
     for p in sysctl::CtlIter::below(ctl) {
         dbg!(p);
-        for p in sysctl::CtlIter::below(p) {
+        for p in sysctl::CtlIter::below(p.unwrap()) {
             dbg!(p);
         }
     }
