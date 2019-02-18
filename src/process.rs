@@ -72,6 +72,9 @@ pub fn collect_proc(interval: Duration) -> Vec<ProcessInfo> {
     dbg!(ctl.value_type());
     for p in sysctl::CtlIter::below(ctl) {
         dbg!(p);
+        for p in sysctl::CtlIter::below(p) {
+            dbg!(p);
+        }
     }
     let mut ctl = sysctl::Ctl::new("kern.proc.all").unwrap();
     dbg!(ctl.value_type());
